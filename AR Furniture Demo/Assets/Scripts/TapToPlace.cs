@@ -17,6 +17,7 @@ public class TapToPlace : MonoBehaviour
     PointerEventData m_PointerEventData;
     [SerializeField] private EventSystem m_EventSystem;
     [SerializeField] private GameObject placementIndicator;
+    [SerializeField] private GameObject objectToPreview;
     [SerializeField] private GameObject objectToPlace;
     private bool placementIsPoseValid;
     private Pose placementPose;
@@ -37,14 +38,14 @@ public class TapToPlace : MonoBehaviour
 
     void Update()
     {
-        //UpdatePlacementPose();
-        //UpdatePlacementIndicator();
+        UpdatePlacementPose();
+        UpdatePlacementIndicator();
 
-        if (Input.GetKeyDown(KeyCode.Mouse0) && CheckForUIElements())
-        {
-            //Debug.Log("Cliked");
-            PlaceItem();
-        }
+        //if (Input.GetKeyDown(KeyCode.Mouse0) && CheckForUIElements())
+        //{
+        //    Debug.Log("Cliked to place");
+        //    PlaceItem();
+        //}
 
         if (placementIsPoseValid && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began && CheckForUIElements())
         {
@@ -58,8 +59,8 @@ public class TapToPlace : MonoBehaviour
     {
 
         m_PointerEventData = new PointerEventData(m_EventSystem);
-        m_PointerEventData.position = Input.mousePosition;
-        //m_PointerEventData.position = Input.GetTouch(0).position;
+        //m_PointerEventData.position = Input.mousePosition;
+        m_PointerEventData.position = Input.GetTouch(0).position;
         List<RaycastResult> results = new List<RaycastResult>();
         m_Raycaster.Raycast(m_PointerEventData, results);
 
@@ -105,29 +106,35 @@ public class TapToPlace : MonoBehaviour
 
     public void ChangeItem()
     {
-        if(objectToPlace != null)
+        if(objectToPreview != null)
         {
-            Destroy(objectToPlace);
+            Destroy(objectToPreview);
         }
-        objectToPlace = Instantiate(FurnitureInventory.SharedInstance.objectToPlace, placementPose.position, placementPose.rotation, placementIndicator.gameObject.transform);
+        objectToPreview = Instantiate(FurnitureInventory.SharedInstance.objectToPlace, placementPose.position, placementPose.rotation, placementIndicator.gameObject.transform);
     }
 
     private void PlaceItem()
     {
 
-        //placedObject = Instantiate(objectToPlace, placementPose.position, placementPose.rotation);
-        ARReferencePoint ahchorPoint = arReferencePointManager.AddReferencePoint(placementPose);
-        if (ahchorPoint == null)
+        if (objectToPreview != null)
         {
-            string errorEntry = "There was an error creating a reference point\n";
-            Debug.Log(errorEntry);
+            ARReferencePoint ahchorPoint = arReferencePointManager.AddReferencePoint(placementPose);
+            if (ahchorPoint == null)
+            {
+                string errorEntry = "There was an error creating a reference point\n";
+                Debug.Log(errorEntry);
+            }
+            else
+            {
+                objectToPlace = objectToPreview;
+                objectToPreview = null;
+
+                objectToPlace.transform.SetParent(ahchorPoint.gameObject.transform);
+                objectToPlace.transform.localPosition = new Vector3(0, 0, 0);
+            }
+ 
         }
-        else
-        {
-            //Instantiate(objectToPlace, placementPose.position, placementPose.rotation, ahchorPoint.gameObject.transform);
-            objectToPlace.transform.SetParent(ahchorPoint.gameObject.transform);
-            objectToPlace.transform.position = new Vector3(0, 0, 0);
-        }
+
     }
 
 }

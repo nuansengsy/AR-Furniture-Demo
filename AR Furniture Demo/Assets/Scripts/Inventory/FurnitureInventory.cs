@@ -12,6 +12,7 @@ public class Item
 public class FurnitureInventory : MonoBehaviour
 {
     public static FurnitureInventory SharedInstance;
+    public TapToPlace tapToPlace;
     public List<Item> itemsList;
     public GameObject objectToPlace;
     //public AsyncOperationHandle<GameObject> handle;
@@ -35,5 +36,6 @@ public class FurnitureInventory : MonoBehaviour
     public void SetObjectToPlace(int id)
     {
         objectToPlace = itemsList[id].modelPrefab;
+        tapToPlace.ChangeItem();
     }
 }
